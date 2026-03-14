@@ -11,7 +11,7 @@ app = Flask(__name__)
 def createMovie():
     json_data = request.json
     if not json_data:
-        return jsonify({"erro", "No json provided"}), 400
+        return jsonify({"error", "No json provided"}), 400
 
     try:
         data = movie_schema.load(json_data)
