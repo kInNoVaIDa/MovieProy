@@ -15,6 +15,24 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  worker:
+    build: .
+    container_name: worker_service
+    command: python worker.py
+    restart: always
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      mongo:
+        condition: service_started
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_USER=user
+      - RABBITMQ_PASS=password
+      - MONGO_URI=mongodb://admin:password123@mongo:27017/
+    volumes:
+      - .:/app
   mongo:
     image: mongo:4.4
     container_name: movie_db
@@ -26,6 +44,8 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=password123
     volumes:
       - mongo_data:/data/db
-
+  api:
+    build: .
+    command: python main.py
 volumes:
   mongo_data:
