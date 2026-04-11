@@ -1,19 +1,27 @@
 import pika
 import os
 import json
+import time
 
 RABBITMQ_HOST = os.getenv("RABBITMQ_HOST", "localhost")
 QUEUE_NAME = "movies_queue"
 
 
-def get_connection():
-    credentials = pika.PlainCredentials("user", "password")
-    parameters = pika.ConnectionParameters(
-        host= RABBITMQ_HOST,
-        port= 5672,
-        credentials=credentials 
-    )
-    return pika.BlockingConnection(parameters)
+def get_connection(retries = 5, delay = 5):
+    for attempt in range(retries):
+        try:
+            credentials = pika.PlainCredentials("user", "password")
+            parameters = pika.ConnectionParameters(
+                host= RABBITMQ_HOST,
+                port= 5672,
+                credentials=credentials 
+            )
+            return pika.BlockingConnection(parameters)
+        except Exception as e:
+            print(f"intento {attempt + 1}/{retries} failed: {e}")
+            if attempt < retries - 1:
+                time.sleep(delay)
+        raise Exception("Cannot connect to rabbitmq")
 
 def publish_message(message: dict):
     connection = get_connection()

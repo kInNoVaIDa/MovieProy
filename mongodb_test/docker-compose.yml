@@ -2,7 +2,7 @@ services:
 
 
   rabbitmq:
-    image: rabbitmq:3-management
+    image: rabbitmq:3.11-management
     container_name: rabbitmq_server
     ports:
       - "5672:5672" # RabbitMQ port
@@ -10,6 +10,9 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: user
       RABBITMQ_DEFAULT_PASS: password
+      RABBITMQ_ERLANG_COOKIE: "secretcookie"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
       test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
       interval: 10s
@@ -17,7 +20,9 @@ services:
       retries: 5
 
   worker:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.local
     container_name: worker_service
     command: python worker.py
     restart: always
@@ -45,7 +50,20 @@ services:
     volumes:
       - mongo_data:/data/db
   api:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.local
     command: python main.py
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongo
+      - rabbitmq
+    environment:
+      - MONGO_URI=mongodb://admin:password123@mongo:27017/
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_USER=user
+      - RABBITMQ_PASS=password
 volumes:
   mongo_data:
+  rabbitmq_data:
