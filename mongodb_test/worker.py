@@ -10,7 +10,7 @@ QUEUE_NAME = "movies_queue"
 def callBack(ch, method, parameters, body):
     movie = json.loads(body)
 
-    print("Recived", movie)
+    print("Recived", movie, flush = True)
 
     movies_coll.insert_one(movie)
 
@@ -25,7 +25,7 @@ def startWorker():
 
     channel.basic_qos(prefetch_count=1)
     channel.basic_consume(queue=QUEUE_NAME, on_message_callback= callBack)
-    print("Worker waiting for messages")
+    print("Worker waiting for messages", flush = True)
 
     channel.start_consuming()
 

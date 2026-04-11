@@ -21,7 +21,7 @@ def get_connection(retries = 5, delay = 5):
             print(f"intento {attempt + 1}/{retries} failed: {e}")
             if attempt < retries - 1:
                 time.sleep(delay)
-        raise Exception("Cannot connect to rabbitmq")
+    raise Exception("Cannot connect to rabbitmq")
 
 def publish_message(message: dict):
     connection = get_connection()
