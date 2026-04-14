@@ -39,6 +39,13 @@ resource "aws_security_group" "movies_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -50,9 +57,6 @@ resource "aws_security_group" "movies_sg" {
     Name = "movies_app_sg"
   }
 }
-
-
-
 
 resource "aws_instance" "api1" {
     ami                     = var.ami
@@ -66,7 +70,7 @@ resource "aws_instance" "api1" {
     tags = {
         Name = "movies-api-1"
         Rule = "BackendAPI"
-    } 
+    }
     depends_on = [
         aws_ssm_parameter.rabbitmq_ip,
         aws_ssm_parameter.mongo_ip
@@ -165,9 +169,12 @@ resource "aws_lb_target_group" "api_tg" {
 
     health_check {
         path                = "/movies"
+        port                = "5000"
+        protocol            = "HTTP"
         healthy_threshold   = 2
         unhealthy_threshold = 2
         interval            = 30
+        timeout             = 5
     }
 }
 
